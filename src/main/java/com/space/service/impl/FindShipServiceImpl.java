@@ -49,20 +49,41 @@ public class FindShipServiceImpl implements FindShipService {
         return size;
     }
 
-    @Override
-    public List<Ship> findByNameAndPlanet(String name, String planet) {
-        return shipRepository.findByNameAndPlanet(name,planet);
-    }
+
 
     @Override
     public List<Ship> findByParameters(Map<String,String> p) {
 
-        return shipRepository.findByParameters(
-                Optional.ofNullable(p.get("name")).orElse("_"),
-                Optional.ofNullable(p.get("planet")).orElse("_"),
-                Optional.ofNullable(ShipType.valueOf(p.get("shipType"))).orElse(null)
+        return shipRepository.findAll(
+            Specification.where( filterByName(p.get("name"))
+                    .and(filterByPlanet(p.get("planet"))))
+                    .and(filterByShipType(  p.get("shipType") ==null? null : ShipType.valueOf(p.get("shipType"))   ))
+
+
+
+
+
+
 
 
         );
     }
+
+    private Specification<Ship> filterByName(String name){
+        return (root, query, cb) -> name == null ? null : cb.like(root.get("name"), "%" + name + "%");
+    }
+
+    private Specification<Ship> filterByPlanet(String planet) {
+        return (root, query, cb) -> planet == null ? null : cb.like(root.get("planet"), "%" + planet + "%");
+    }
+
+
+    private Specification<Ship> filterByShipType(ShipType shipType) {
+        return (root, query, cb) -> shipType == null ? null : cb.equal(root.get("shipType"), shipType);
+    }
+
+
+
+
+
 }
