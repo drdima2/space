@@ -15,7 +15,7 @@ public interface FindShipService {
     //List<Ship> findAll();
     List<Ship> findAll(Sort sort);
     Ship findById(Long id);
-    int countAllShips();
+    int countByParameters(Map<String,String> params);
 
     List<Ship> findByParameters(Map<String,String> params);
 
