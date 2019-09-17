@@ -1,46 +1,39 @@
 package com.space.controller;
 
 import com.space.entity.Ship;
-//import com.space.service.FindShipService;
 import com.space.exception.BadRequestException;
 import com.space.service.FindShipService;
+import com.space.service.UpdateShipService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+
+//import com.space.service.FindShipService;
 
 @RestController
-public class ShipSelectController {
+public class ShipUpdateController {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ShipSelectController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ShipUpdateController.class);
 
     @Autowired
-    private FindShipService findShipService;
+    private UpdateShipService updateShipService;
 
-    @RequestMapping(value = "/rest/ships",method = RequestMethod.GET)
-    public List<Ship> getShips(@RequestParam Map<String,String> params){
+    @RequestMapping(value = "/rest/ships/{id}",method = RequestMethod.POST)
+    public Ship updateShip(@PathVariable("id") Long id, @RequestBody Ship shipReq){
 
-        List<Ship> ships = findShipService.findByParameters(params);
-        return ships;
+        Ship shipUpdated = updateShipService.updateShip(shipReq,id);
+
+
+
+        return shipUpdated;
     }
 
 
-    @RequestMapping(value = "/rest/ships/count",method = RequestMethod.GET)
-    public int getShipsCount(@RequestParam Map<String,String> params){
-        return findShipService.countByParameters(params);
-    }
-
-
-
-    @RequestMapping(value = "/rest/ships/{id}",method = RequestMethod.GET)
-    public Ship getShips(@PathVariable("id") Long id,Model model){
-        if (id<=0) throw new BadRequestException("id must be positive number");
-        Ship ship = findShipService.findById(id);
-        return ship;
-    }
 
 
 

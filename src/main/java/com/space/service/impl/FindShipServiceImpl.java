@@ -2,20 +2,17 @@ package com.space.service.impl;
 
 import com.space.controller.ShipOrder;
 import com.space.entity.Ship;
+import com.space.exception.BadRequestException;
+import com.space.exception.NotFoundRequestException;
 import com.space.model.ShipType;
 import com.space.repository.ShipRepository;
 import com.space.service.FindShipService;
-import com.sun.org.apache.xpath.internal.operations.Bool;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
-import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
+
 
 import java.util.Date;
 import java.util.List;
@@ -42,7 +39,15 @@ public class FindShipServiceImpl implements FindShipService {
     }
 
     public Ship findById(Long id){
-        return shipRepository.findById(id).get();
+
+        if (id<=0) throw new BadRequestException("id must be positive number");
+        Ship ship = null;
+        try {
+            ship = shipRepository.findById(id).get();
+        } catch (Exception e) {
+            throw new NotFoundRequestException("this id doesn't exists");
+        }
+        return ship;
     }
 
     @Override

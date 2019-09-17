@@ -20,7 +20,7 @@ import java.util.Optional;
 @RepositoryDefinition(domainClass=Ship.class, idClass=Long.class)
 public interface ShipRepository extends JpaRepository<Ship,Long> , JpaSpecificationExecutor<Ship> {
 
-    List<Ship> findAll(Specification<Ship> specification);
+    //List<Ship> findAll(Specification<Ship> specification);
 
 
 

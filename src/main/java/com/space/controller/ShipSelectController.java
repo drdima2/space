@@ -2,6 +2,7 @@ package com.space.controller;
 
 import com.space.entity.Ship;
 //import com.space.service.FindShipService;
+import com.space.exception.BadRequestException;
 import com.space.service.FindShipService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,7 @@ public class ShipSelectController {
 
     @RequestMapping(value = "/rest/ships",method = RequestMethod.GET)
     public List<Ship> getShips(@RequestParam Map<String,String> params){
+
         List<Ship> ships = findShipService.findByParameters(params);
         return ships;
     }
@@ -35,6 +37,7 @@ public class ShipSelectController {
 
     @RequestMapping(value = "/rest/ships/{id}",method = RequestMethod.GET)
     public Ship getShips(@PathVariable("id") Long id,Model model){
+
         Ship ship = findShipService.findById(id);
         return ship;
     }
