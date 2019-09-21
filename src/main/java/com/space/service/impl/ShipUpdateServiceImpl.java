@@ -3,16 +3,16 @@ package com.space.service.impl;
 import com.space.entity.Ship;
 import com.space.exception.BadRequestException;
 import com.space.repository.ShipRepository;
-import com.space.service.FindShipService;
-import com.space.service.UpdateShipService;
+import com.space.service.ShipSelectService;
+import com.space.service.ShipUpdateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UpdateShipServiceImpl implements UpdateShipService {
+public class ShipUpdateServiceImpl implements ShipUpdateService {
 
     @Autowired
-    private FindShipService findShipService;
+    private ShipSelectService shipSelectService;
 
     @Autowired
     private ShipRepository shipRepository;
@@ -20,9 +20,14 @@ public class UpdateShipServiceImpl implements UpdateShipService {
 
     @Override
     public Ship updateShip(Ship ship, Long id) {
-        //if (ship.isEmpty()) throw  new BadRequestException("empty update request");
-        Ship shipUpdated = findShipService.findById(id);
+        Ship shipUpdated = shipSelectService.findById(id);
+        shipUpdated = updateShipObject(shipUpdated,ship);
+        if (!shipUpdated.isShipContainRequiredParameters()) throw  new BadRequestException("update bad parameters");
+        shipUpdated.setRating(shipUpdated.calculateRating().doubleValue());
+        return shipRepository.save(shipUpdated);
+    }
 
+    private Ship updateShipObject(Ship shipUpdated, Ship ship){
         if (ship.getName() != null)
             shipUpdated.setName(ship.getName());
 
@@ -44,10 +49,6 @@ public class UpdateShipServiceImpl implements UpdateShipService {
         if (ship.getCrewSize() != null)
             shipUpdated.setCrewSize(ship.getCrewSize());
 
-        if (!shipUpdated.isShipContainRequiredParameters()) throw  new BadRequestException("update bad parameters");
-
-        shipUpdated.setRating(shipUpdated.calculateRating().doubleValue());
-
-        return shipRepository.save(shipUpdated);
+        return shipUpdated;
     }
 }

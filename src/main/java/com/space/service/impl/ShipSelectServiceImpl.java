@@ -1,12 +1,14 @@
 package com.space.service.impl;
 
+import java.util.Calendar;
 import com.space.controller.ShipOrder;
 import com.space.entity.Ship;
 import com.space.exception.BadRequestException;
 import com.space.exception.NotFoundRequestException;
 import com.space.model.ShipType;
 import com.space.repository.ShipRepository;
-import com.space.service.FindShipService;
+import com.space.service.ShipSelectService;
+import com.space.util.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
@@ -14,14 +16,11 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.stereotype.Service;
 
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 
-public class FindShipServiceImpl implements FindShipService {
+public class ShipSelectServiceImpl implements ShipSelectService {
 
 
     @Autowired
@@ -31,17 +30,9 @@ public class FindShipServiceImpl implements FindShipService {
     private LocalContainerEntityManagerFactoryBean localContainerEntityManagerFactoryBean;
 
 
-
-
-    @Override
-    public List<Ship> findAll(Sort sort) {
-        return shipRepository.findAll(sort);
-    }
-
     public Ship findById(Long id){
-
-        if (id<=0) throw new BadRequestException("id must be positive number");
-        Ship ship = null;
+        if (id<=0) throw new BadRequestException("id must be a positive number");
+        Ship ship;
         try {
             ship = shipRepository.findById(id).get();
         } catch (Exception e) {
@@ -52,67 +43,44 @@ public class FindShipServiceImpl implements FindShipService {
 
     @Override
     public int countByParameters(Map<String,String> p) {
-        List<Ship> results = shipRepository.findAll(
-                Specification.where( filterByName(p.get("name"))
-                        .and(filterByPlanet(p.get("planet"))))
-                        .and(filterByShipType(  p.get("shipType") ==null? null : ShipType.valueOf(p.get("shipType"))   ))
-                        .and(filterByDate(p.get("after") ==null? null : Long.valueOf(p.get("after")), p.get("before") ==null? null : Long.valueOf(p.get("before"))   ))
-                        .and(filterByCrew(p.get("minCrewSize") ==null? null : Integer.valueOf(p.get("minCrewSize")), p.get("maxCrewSize") ==null? null : Integer.valueOf(p.get("maxCrewSize"))   ))
-                        .and(filterBySpeed(p.get("minSpeed") ==null? null : Double.valueOf(p.get("minSpeed")), p.get("maxSpeed") ==null? null : Double.valueOf(p.get("maxSpeed"))   ))
-                        .and(filterByRating(p.get("minRating") ==null? null : Double.valueOf(p.get("minRating")), p.get("maxRating") ==null? null : Double.valueOf(p.get("maxRating"))   ))
-                        .and(filterByIsUsed(  p.get("isUsed") ==null? null : Boolean.valueOf(p.get("isUsed"))   ))
-        );
-
+        List<Ship> results = shipRepository.findAll(getSpecification(p));
         return results.size();
-
-
     }
 
 
 
     @Override
     public List<Ship> findByParameters(Map<String,String> p) {
-
-        //Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(order.getFieldName()));
         int pageNumber = p.get("pageNumber")==null? 0 : Integer.valueOf(p.get("pageNumber"));
         int pageSize = p.get("pageSize")==null? 3 : Integer.valueOf(p.get("pageSize"));
         ShipOrder shipOrder = p.get("order")==null? ShipOrder.valueOf("ID") : ShipOrder.valueOf(p.get("order"));
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(shipOrder.getFieldName()));
-
-
-
-        List<Ship> results = shipRepository.findAll(
-            Specification.where( filterByName(p.get("name"))
-                    .and(filterByPlanet(p.get("planet"))))
-                    .and(filterByShipType(  p.get("shipType") ==null? null : ShipType.valueOf(p.get("shipType"))   ))
-                    .and(filterByDate(p.get("after") ==null? null : Long.valueOf(p.get("after")), p.get("before") ==null? null : Long.valueOf(p.get("before"))   ))
-                    .and(filterByCrew(p.get("minCrewSize") ==null? null : Integer.valueOf(p.get("minCrewSize")), p.get("maxCrewSize") ==null? null : Integer.valueOf(p.get("maxCrewSize"))   ))
-                    .and(filterBySpeed(p.get("minSpeed") ==null? null : Double.valueOf(p.get("minSpeed")), p.get("maxSpeed") ==null? null : Double.valueOf(p.get("maxSpeed"))   ))
-                    .and(filterByRating(p.get("minRating") ==null? null : Double.valueOf(p.get("minRating")), p.get("maxRating") ==null? null : Double.valueOf(p.get("maxRating"))   ))
-                    .and(filterByIsUsed(  p.get("isUsed") ==null? null : Boolean.valueOf(p.get("isUsed"))   ))
-                ,pageable
-
-
-        ).getContent();
-
+        List<Ship> results = shipRepository.findAll(getSpecification(p),pageable).getContent();
         return results;
-
-
-
-
     }
 
 
+    private Specification getSpecification(Map<String,String> p){
+        Specification s = Specification.where( filterByName(p.get("name"))
+                .and(filterByPlanet(p.get("planet"))))
+                .and(filterByShipType(  p.get("shipType") ==null? null : ShipType.valueOf(p.get("shipType"))   ))
+                .and(filterByDate(p.get("after") ==null? null : Long.valueOf(p.get("after")), p.get("before") ==null? null : Long.valueOf(p.get("before"))   ))
+                .and(filterByCrew(p.get("minCrewSize") ==null? null : Integer.valueOf(p.get("minCrewSize")), p.get("maxCrewSize") ==null? null : Integer.valueOf(p.get("maxCrewSize"))   ))
+                .and(filterBySpeed(p.get("minSpeed") ==null? null : Double.valueOf(p.get("minSpeed")), p.get("maxSpeed") ==null? null : Double.valueOf(p.get("maxSpeed"))   ))
+                .and(filterByRating(p.get("minRating") ==null? null : Double.valueOf(p.get("minRating")), p.get("maxRating") ==null? null : Double.valueOf(p.get("maxRating"))   ))
+                .and(filterByIsUsed(  p.get("isUsed") ==null? null : Boolean.valueOf(p.get("isUsed"))   ));
+
+        return s;
+    }
 
 
     private Specification<Ship> filterByName(String name){
-        return (root, query, cb) -> name == null ? null : cb.like(root.get("name"), "%" + name + "%");
+        return (root, query, cb) -> name == null ? null : cb.like(root.get("name"), "%" + name.trim() + "%");
     }
 
     private Specification<Ship> filterByPlanet(String planet) {
-        return (root, query, cb) -> planet == null ? null : cb.like(root.get("planet"), "%" + planet + "%");
+        return (root, query, cb) -> planet == null ? null : cb.like(root.get("planet"), "%" + planet.trim() + "%");
     }
-
 
     private Specification<Ship> filterByShipType(ShipType shipType) {
         return (root, query, cb) -> shipType == null ? null : cb.equal(root.get("shipType"), shipType);
@@ -124,19 +92,21 @@ public class FindShipServiceImpl implements FindShipService {
                 return null;
 
             if (after == null) {
-                Date beforeYear = new Date(before);
+                Date beforeYear = DateUtil.yearConvert(new Date(before));
                 return cb.lessThanOrEqualTo(root.get("prodDate"), beforeYear);
             }
 
             if (before == null) {
-                Date afterYear = new Date(after);
+                Date afterYear = DateUtil.yearConvert(new Date(after));
                 return cb.greaterThanOrEqualTo(root.get("prodDate"), afterYear);
             }
-            Date beforeYear = new Date(before);
-            Date afterYear = new Date(after);
+            Date beforeYear = DateUtil.yearConvert(new Date(before));
+            Date afterYear = DateUtil.yearConvert(new Date(after));
             return cb.between(root.get("prodDate"), afterYear, beforeYear);
         };
     }
+
+
 
     private Specification<Ship> filterByCrew(Integer minCrewSize, Integer maxCrewSize) {
         return (root, query, cb) -> {

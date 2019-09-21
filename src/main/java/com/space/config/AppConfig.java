@@ -73,7 +73,7 @@ public class AppConfig {
 //        logging.level.org.hibernate.type.descriptor.sql=trace
 
         //properties.setProperty("logging.level.org.hibernate.SQL", "debug");
-        properties.setProperty("logging.level.org.hibernate.type.descriptor.sql", "trace");
+        //properties.setProperty("logging.level.org.hibernate.type.descriptor.sql", "trace");
 
 
 

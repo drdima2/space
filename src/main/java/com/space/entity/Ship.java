@@ -1,53 +1,48 @@
 package com.space.entity;
 
 import com.space.model.ShipType;
-
-
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.Range;
 import javax.persistence.*;
-import javax.validation.constraints.*;
-import org.hibernate.validator.constraints.*;
+import javax.validation.constraints.DecimalMax;
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Calendar;
 import java.util.Date;
 
 @Entity
 @Table(name = "ship")
 public class Ship implements Serializable {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;               //ID корабля
 
 
     @org.hibernate.validator.constraints.NotBlank
-    @Length(max=50)
+    @Length(max = 50)
     @Column(nullable = false, length = 50)
     private String name;           //Название корабля (до 50 знаков включительно)
 
 
     @org.hibernate.validator.constraints.NotBlank
-    @Length(max=50)
+    @Length(max = 50)
     @Column(nullable = false, length = 50)
     private String planet;         //Планета пребывания (до 50 знаков включительно)
 
+
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false)
     private ShipType shipType;     //Тип корабля
 
 
-
-    @Future()
-    @Temporal(TemporalType.DATE)
     private Date prodDate;          //Дата выпуска. Диапазон значений года 2800..3019 включительно
-
 
 
     private Boolean isUsed;        //Использованный / новый
 
 
-    //@org.hibernate.validator.constraints.
     @NotNull(message = "speed must be 0.01 to 0.99")
     @Column(nullable = false)
     @DecimalMin("0.01")
@@ -56,10 +51,9 @@ public class Ship implements Serializable {
 
 
     @NotNull(message = "crew size must be 1 to 9999")
-    @Range(min=1, max = 9999)
+    @Range(min = 1, max = 9999)
     @Column(nullable = false)
     private Integer crewSize;      // Количество членов экипажа. Диапазон значений 1..9999 включительно
-
 
 
     private Double rating;         // Рейтинг корабля. Используй математическое округление до сотых.
@@ -79,53 +73,52 @@ public class Ship implements Serializable {
         this.id = id;
         this.name = name;
         this.planet = planet;
-
     }
 
 
-    public boolean isShipContainRequiredParameters(){
+    public boolean isShipContainRequiredParameters() {
         if (isEmpty()) return false;
-            if ((getName() == null) || getName().isEmpty() || getName().length()>50 ||
-                    (getPlanet() == null) || getPlanet().isEmpty() || getPlanet().length()>50 ||
-                    (getShipType() == null) ||
-                    getYear() < 2800 ||
-                    getYear() > 3019 ||
-                    (getUsed() == null) ||
-                    (getSpeed() == null) ||
-                    (getCrewSize() == null) || getCrewSize()<1 || getCrewSize()>9999
-
-                ){
-                return false;
+        if ((getName() == null) || getName().trim().isEmpty() || getName().trim().length() > 50 ||
+                (getPlanet() == null) || getPlanet().trim().isEmpty() || getPlanet().trim().length() > 50 ||
+                (getShipType() == null) ||
+                getYear() < 2800 ||
+                getYear() > 3019 ||
+                (getUsed() == null) ||
+                (getSpeed() == null) || getSpeed() < 0.01 || getSpeed()>0.99 ||
+                (getCrewSize() == null) || getCrewSize() < 1 || getCrewSize() > 9999
+                ) {
+            return false;
         }
         return true;
     }
+
 
     public boolean isEmpty() {
         if ((getName() == null) &&
                 (getPlanet() == null) &&
                 (getShipType() == null) &&
-                getProdDate() ==null &&
+                getProdDate() == null &&
                 (getSpeed() == null) &&
                 (getCrewSize() == null)
-        ) return true;
+                ) return true;
         return false;
     }
 
 
     public BigDecimal calculateRating() {
-        BigDecimal currentYear=BigDecimal.valueOf(3019);
-        BigDecimal rating=BigDecimal.ZERO;
+        BigDecimal currentYear = BigDecimal.valueOf(3019);
+        BigDecimal rating = BigDecimal.ZERO;
         BigDecimal koofitzent = getUsed() ? BigDecimal.valueOf(0.5) : BigDecimal.valueOf(1);
         BigDecimal speed = BigDecimal.valueOf(getSpeed());
         BigDecimal yearDiff = currentYear.subtract(BigDecimal.valueOf(getYear())).add(BigDecimal.ONE);
         BigDecimal firstPart = BigDecimal.valueOf(80).multiply(speed.multiply(koofitzent));
-        rating =   firstPart.divide(yearDiff,2, BigDecimal.ROUND_HALF_UP);
-
+        rating = firstPart.divide(yearDiff, 2, BigDecimal.ROUND_HALF_UP);
         return rating;
     }
 
-    public int getYear(){
-        if (getProdDate()!=null) {
+
+    public int getYear() {
+        if (getProdDate() != null) {
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(getProdDate());
             return calendar.get(Calendar.YEAR);
@@ -150,6 +143,7 @@ public class Ship implements Serializable {
         sb.append('}');
         return sb.toString();
     }
+
 
     public Long getId() {
         return id;

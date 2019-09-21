@@ -3,12 +3,12 @@ package com.space.service.impl;
 import com.space.exception.BadRequestException;
 import com.space.exception.NotFoundRequestException;
 import com.space.repository.ShipRepository;
-import com.space.service.DeleteShipService;
+import com.space.service.ShipDeleteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class DeleteShipServiceImpl implements DeleteShipService {
+public class ShipDeleteServiceImpl implements ShipDeleteService {
 
     @Autowired
     private ShipRepository shipRepository;

@@ -16,19 +16,9 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-//@Repository
+
 @RepositoryDefinition(domainClass=Ship.class, idClass=Long.class)
-public interface ShipRepository extends JpaRepository<Ship,Long> , JpaSpecificationExecutor<Ship> {
-
-    //List<Ship> findAll(Specification<Ship> specification);
-
-
-
-
-
-
-
-
-
+public interface ShipRepository extends
+        JpaRepository<Ship,Long> , JpaSpecificationExecutor<Ship> {
 
 }
